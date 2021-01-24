@@ -12,9 +12,9 @@ from matplotlib import pyplot as plt
 #parameters of learning
 alpha = 0.01
 gamma = 0.95
-epsilon = 0.1
+epsilon = 0.05
 
-NUM_EPISODES = 1000
+NUM_EPISODES = 5000
 
 '''action space:
     0 - south (up)
@@ -30,7 +30,7 @@ def check_old_state(old_state, new_state):
     if new_state == old_state: 
         return -10, old_state
     else: 
-        return -1, new_state
+        return 0, new_state
 
 def next_step(q_table, enviroment, action, state, old_state): #verificar se tomando uma nova decisão não tomei a mesma anteriormente pra evitar caminhos longos
     #print('estou no estado', state, 'acao', action, 'vim do estado', old_state )
@@ -41,9 +41,9 @@ def next_step(q_table, enviroment, action, state, old_state): #verificar se toma
             if action == 0 or action==3:
                 return -10, state
             elif action==1:
-                return -1, state+4
+                return 0, state+4
             elif action==2:
-                return  -1, state+1
+                return  0, state+1
 
         if state == 1 or state == 2:
             if action == 0 or action ==3: 
@@ -146,7 +146,7 @@ def update(q_table, enviroment, state, old_state, episode):
     old_q_value = q_table[state][action]
     #get maximum q_value for action in next state
     next_max_state_q_value = np.argmax(q_table[next_state],axis=0)
-    if episode == 1000 and reward==20:
+    if episode == 5000 and reward==20:
          new_q_value = (1-alpha) * old_q_value + alpha * (-1 + gamma * next_max_state_q_value)
     else:
         new_q_value = (1-alpha) * old_q_value + alpha * (reward + gamma * next_max_state_q_value)
@@ -155,10 +155,11 @@ def update(q_table, enviroment, state, old_state, episode):
 
 
 def training_agent(q_table, enviroment, num_episodes, env_size):
-    global goal_state, steps, rewards, training_start, training_end
+    global goal_state, steps, rewards, training_start, training_end, penalties
     training_start = time()
     steps = []
     rewards = []
+    penalties = []
     for x in range(num_episodes):
         i,j = identifies_state(enviroment, env_size) #reset enviroment to learn a new goal
         k, l = identifiesgoal_state(enviroment, env_size)
@@ -176,6 +177,7 @@ def training_agent(q_table, enviroment, num_episodes, env_size):
         #store steps and rewards for each episode
         steps.append(epochs)
         rewards.append(total_reward)
+        penalties.append(num_penalties)
         print("Time steps: {}, Penalties: {}, Reward: {}".format(epochs,num_penalties,total_reward))
         training_end = time()
     print(rewards)
@@ -187,7 +189,10 @@ def evaluate_training():
                for n in range(1, len(rewards))]
     elapsed_training_time = int(training_end-training_start)
     success_rate = np.mean(rewards)
-    print("\nThis environment has been solved", str(success_rate), "% of times over",  str(NUM_EPISODES), "episodes within", str(elapsed_training_time), "seconds!")
+    penalties_rate = np.mean(penalties)
+    epochs_step_rate = np.mean(steps)
+    print("\nThis environment has been solved", str(success_rate), "% of times over",  str(NUM_EPISODES), "episodes within", str(elapsed_training_time), 
+    "seconds and with an average number of penalties per episode", str(penalties_rate), "and an average number of timesteps per trip of" , str(epochs_step_rate) )
     plt.figure(figsize=(12,8))
     plt.plot(rewards)
     plt.plot(mean_rate)
