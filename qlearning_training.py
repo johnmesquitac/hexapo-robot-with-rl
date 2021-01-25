@@ -13,10 +13,10 @@ from matplotlib import pyplot as plt
 
 #parameters of learning
 alpha = 0.01
-gamma = 0.95
-epsilon = 0.05
+gamma = 0.6
+epsilon = 0.1
 
-NUM_EPISODES = 20000
+NUM_EPISODES = 7000
 
 '''action space:
     0 - south (up)
@@ -47,7 +47,7 @@ def next_step(q_table, enviroment, action, state, old_state): #verificar se toma
             elif action==2:
                 return  0, state+1
 
-        if state == 1 or state == 2:
+        elif state == 1 or state == 2:
             if action == 0 or action ==3: 
                 return -10, state
             elif action==1:
@@ -57,7 +57,7 @@ def next_step(q_table, enviroment, action, state, old_state): #verificar se toma
                 reward, new_state = check_old_state(old_state, state+1)
                 return reward, new_state
 
-        if state == 5 or state == 6 or state==9 or state==10:
+        elif state == 5 or state == 6 or state==9 or state==10:
             if action == 0:
                 reward, new_state = check_old_state(old_state, state-4)
                 return reward, new_state
@@ -71,7 +71,7 @@ def next_step(q_table, enviroment, action, state, old_state): #verificar se toma
                 reward, new_state = check_old_state(old_state, state-1)
                 return reward, new_state
         
-        if state == 3:
+        elif state == 3:
             if action == 0 or action==2:
                 return -10, state
             elif action == 1:
@@ -81,7 +81,7 @@ def next_step(q_table, enviroment, action, state, old_state): #verificar se toma
                 reward, new_state = check_old_state(old_state, state-1)
                 return reward, new_state
 
-        if state == 7 or state == 11:
+        elif state == 7 or state == 11:
             if action == 0:
                 reward, new_state = check_old_state(old_state, state-4)
                 return reward, new_state
@@ -94,7 +94,7 @@ def next_step(q_table, enviroment, action, state, old_state): #verificar se toma
                 reward, new_state = check_old_state(old_state, state-1)
                 return reward, new_state
 
-        if state == 4 or state ==8:
+        elif state == 4 or state ==8:
             if action == 0 :
                 reward, new_state = check_old_state(old_state, state-4)
                 return reward, new_state
@@ -106,7 +106,8 @@ def next_step(q_table, enviroment, action, state, old_state): #verificar se toma
             elif action==2:
                 reward, new_state = check_old_state(old_state, state+1)
                 return reward, new_state
-        if state == 12:
+
+        elif state == 12:
             if action == 0 :
                 reward, new_state = check_old_state(old_state, state-4)
                 return reward, new_state
@@ -114,8 +115,9 @@ def next_step(q_table, enviroment, action, state, old_state): #verificar se toma
                 return -10, state
             elif action==2:
                 reward, new_state = check_old_state(old_state, state+1)
-                return reward, new_state        
-        if state == 13 or state == 14:
+                return reward, new_state      
+                
+        elif state == 13 or state == 14:
             if action == 0 :
                 reward, new_state = check_old_state(old_state, state-4)
                 return reward, new_state
@@ -127,7 +129,8 @@ def next_step(q_table, enviroment, action, state, old_state): #verificar se toma
             elif action==2:
                 reward, new_state = check_old_state(old_state, state+1)
                 return reward, new_state
-        if state == 15:
+
+        elif state == 15:
             if action == 0 :
                 reward, new_state = check_old_state(old_state, state-4)
                 return reward, new_state
@@ -143,11 +146,17 @@ def update(q_table, enviroment, state, old_state, episode):
         action = random.choice(action_space)
     else:
         action = select_optimal_action(q_table, state)
+
+    #get the reward of choosing current action and the next state
     reward, next_state = next_step(q_table, enviroment, action, state, old_state)
+
+    #stores the old_state to not going back avoiding loopings in the same square
     old_state = state
     old_q_value = q_table[state][action]
+
     #get maximum q_value for action in next state
     next_max_state_q_value = np.argmax(q_table[next_state],axis=0)
+
     if episode == NUM_EPISODES and reward==20:
          new_q_value = (1-alpha) * old_q_value + alpha * (-1 + gamma * next_max_state_q_value)
     else:
@@ -163,6 +172,7 @@ def training_agent(q_table, enviroment, num_episodes, env_size):
     rewards = []
     penalties = []
     for x in range(num_episodes):
+        enviroment = reset_enviroment(enviroment,env_size)
         i,j = identifies_state(enviroment, env_size) #reset enviroment to learn a new goal
         k, l = identifiesgoal_state(enviroment, env_size)
         state = int(state_matrix[i][j])
@@ -172,7 +182,8 @@ def training_agent(q_table, enviroment, num_episodes, env_size):
         while int(reward) < 20 :
             state,reward,old_state = update(q_table, enviroment, state, old_state, num_episodes)
             total_reward += reward
-            epochs+=1
+            if state!=old_state:
+                epochs+=1
             if reward == -10:
                 num_penalties+=1
 
@@ -180,21 +191,26 @@ def training_agent(q_table, enviroment, num_episodes, env_size):
         steps.append(epochs)
         rewards.append(total_reward)
         penalties.append(num_penalties)
-        print("Time steps: {}, Penalties: {}, Reward: {}".format(epochs,num_penalties,total_reward))
-        training_end = time()
+
+        print("Time steps: {}, Penalties: {}, Reward: {}, Goal State: {}".format(epochs,num_penalties,total_reward,goal_state))
+
+    training_end = time()
+
     print(rewards)
     return q_table, enviroment
 
 def evaluate_training():
     print(rewards)
-    mean_rate = [np.mean(rewards[n-10:n]) if n > 10 else np.mean(rewards[:n]) 
-               for n in range(1, len(rewards))]
+
+    mean_rate = [np.mean(rewards[n-10:n]) if n > 10 else np.mean(rewards[:n]) for n in range(1, len(rewards))]
     elapsed_training_time = int(training_end-training_start)
     success_rate = np.mean(rewards)
     penalties_rate = np.mean(penalties)
     epochs_step_rate = np.mean(steps)
+
     print("\nThis environment has been solved", str(success_rate), "% of times over",  str(NUM_EPISODES), "episodes within", str(elapsed_training_time), 
     "seconds and with an average number of penalties per episode", str(penalties_rate), "and an average number of timesteps per trip of" , str(epochs_step_rate) )
+
     plt.figure(figsize=(12,8))
     plt.plot(rewards)
     plt.plot(mean_rate)
@@ -203,7 +219,7 @@ def evaluate_training():
     plt.ylabel('Reward')
     plt.savefig("mean.png")
 
-    fig = plt.figure()
+    fig = plt.figure(figsize=(12,8))
     ax1 = fig.add_subplot(111)
     ax1.plot(rewards, '-g', label = 'reward')
     ax2 = ax1.twinx()
@@ -216,7 +232,7 @@ def evaluate_training():
     plt.title("Training Progress")
     plt.savefig('trainingprocess.png')
 
-    fig = plt.figure()
+    fig = plt.figure(figsize=(12,8))
     plt.plot(steps)
     plt.xlabel('Episode')
     plt.ylabel('Steps')
@@ -228,11 +244,12 @@ def evaluate_training():
     plt.ylabel('Rewards')
     plt.savefig('rewards.png')
 
-
 def reset_enviroment(enviroment, env_size): #changes the goal to another place
     enviroment = np.zeros((env_size, env_size))
     indices = np.random.randint(env_size, size=2)
     i, j = indices[0], indices[1]
+    if(i==0==j):
+        j+=1
     enviroment[i][j] = 20
     enviroment[0][0] = 1
     return enviroment
@@ -246,10 +263,9 @@ def initialize_state_matrix(matrix, matrix_size):
     return matrix
 
 def identifies_state(enviroment,env_size):
-    env = reset_enviroment(enviroment, env_size)
     for i in range(env_size):
         for j in range(env_size):
-            if env[i][j] == 1:
+            if enviroment[i][j] == 1:
                 return i,j
 
 def identifiesgoal_state(enviroment,env_size):
@@ -258,8 +274,8 @@ def identifiesgoal_state(enviroment,env_size):
             if enviroment[i][j] == 20:
                 return i,j
 
+#plot desired matrix
 def plot_matrix(matrix, x_size, y_size):
-    #plot parameters of
     figure, ax = plt.subplots() 
     im = ax.matshow(matrix)
     for i in range(x_size):
@@ -283,8 +299,6 @@ def main():
     print(Q)
     with open('q_table.pickle', "wb") as write:
         pickle.dump(Q, write)
-
-
 
 if __name__ == '__main__':
     main()
