@@ -5,6 +5,8 @@ import numpy as np
 import pandas as pd
 import sys
 import random
+import plotly.express as px
+import pickle
 from time import time
 from matplotlib import pyplot as plt
 
@@ -14,7 +16,7 @@ alpha = 0.01
 gamma = 0.95
 epsilon = 0.05
 
-NUM_EPISODES = 5000
+NUM_EPISODES = 20000
 
 '''action space:
     0 - south (up)
@@ -86,9 +88,9 @@ def next_step(q_table, enviroment, action, state, old_state): #verificar se toma
             elif action == 1:
                 reward, new_state = check_old_state(old_state, state+4)
                 return reward, new_state
-            elif action == 2:
-                return -10, state
             elif action == 3:
+                return -10, state
+            elif action == 2:
                 reward, new_state = check_old_state(old_state, state-1)
                 return reward, new_state
 
@@ -146,7 +148,7 @@ def update(q_table, enviroment, state, old_state, episode):
     old_q_value = q_table[state][action]
     #get maximum q_value for action in next state
     next_max_state_q_value = np.argmax(q_table[next_state],axis=0)
-    if episode == 5000 and reward==20:
+    if episode == NUM_EPISODES and reward==20:
          new_q_value = (1-alpha) * old_q_value + alpha * (-1 + gamma * next_max_state_q_value)
     else:
         new_q_value = (1-alpha) * old_q_value + alpha * (reward + gamma * next_max_state_q_value)
@@ -200,7 +202,33 @@ def evaluate_training():
     plt.xlabel('Episode')
     plt.ylabel('Reward')
     plt.savefig("mean.png")
-    
+
+    fig = plt.figure()
+    ax1 = fig.add_subplot(111)
+    ax1.plot(rewards, '-g', label = 'reward')
+    ax2 = ax1.twinx()
+    ax2.plot(steps, '+r', label = 'step')
+    ax1.set_xlabel("episode")
+    ax1.set_ylabel("reward")
+    ax2.set_ylabel("step")
+    ax1.legend(loc=2)
+    ax2.legend(loc=1)
+    plt.title("Training Progress")
+    plt.savefig('trainingprocess.png')
+
+    fig = plt.figure()
+    plt.plot(steps)
+    plt.xlabel('Episode')
+    plt.ylabel('Steps')
+    plt.savefig('steps.png')
+
+    fig = plt.figure()
+    plt.plot(rewards)
+    plt.xlabel('Episode')
+    plt.ylabel('Rewards')
+    plt.savefig('rewards.png')
+
+
 def reset_enviroment(enviroment, env_size): #changes the goal to another place
     enviroment = np.zeros((env_size, env_size))
     indices = np.random.randint(env_size, size=2)
@@ -253,6 +281,8 @@ def main():
     Q, enviroment = training_agent(Q, env, NUM_EPISODES, enviromentsize)
     evaluate_training()
     print(Q)
+    with open('q_table.pickle', "wb") as write:
+        pickle.dump(Q, write)
 
 
 
