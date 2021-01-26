@@ -1,3 +1,4 @@
 .vscode/*
 venv/
 qlearning_training_without_last.py
+/__pycache__/*
