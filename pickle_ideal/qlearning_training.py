@@ -12,11 +12,11 @@ from matplotlib import pyplot as plt
 
 
 #parameters of learning
-alpha = 0.5 #learning rate, learn more quickly if alpha is closer to 1
+alpha = 0.99
 gamma = 0.6 #use a higher gamma for smaller spaces because we value later rewards rather than former rewards
 epsilon = 0.05 #agent can do 100% exploitation (0) or 100% exploration (1)
 
-NUM_EPISODES = 15000
+NUM_EPISODES = 10000
 
 '''action space:
     0 - south (up)

@@ -1,10 +1,9 @@
 import numpy as np 
 import pickle
-from qlearning_training import select_optimal_action, reset_enviroment, initialize_state_matrix, identifiesgoal_state, identifies_state
+from qlearning_training import select_optimal_action, reset_enviroment, initialize_state_matrix, identifiesgoal_state, identifies_state, next_step
 
 action_space = np.array([0,1,2,3])
 
-NUM_EPISODES = 100
 
 def select_optimal_path(q_table,enviroment):
     enviroment[0][0] = 1
@@ -12,8 +11,21 @@ def select_optimal_path(q_table,enviroment):
     k, l = identifiesgoal_state(enviroment, enviromentsize)
     state = int(state_matrix[i][j])
     goal_state = int(state_matrix[k][l])
+    states = []
+    states.append(state)
     print(state, goal_state,'\n')
     print('\n', q_table, '\n', enviroment)
+    old_state, reward, next_state = 0, 0, 0
+    while(int(reward)<20):
+        action = select_optimal_action(q_table, state)
+        reward, next_state = next_step(q_table, enviroment, action, state, old_state, goal_state)
+        old_state = state
+        print(old_state, next_state)
+        state = next_state
+        states.append(state)
+        print(states)
+        print(state, goal_state,'\n', enviroment)
+    print(states,'\n',q_table)
 
 def main():
     global state_matrix, enviromentsize
