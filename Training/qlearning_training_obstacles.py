@@ -1,3 +1,4 @@
+# pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long, unused-variable
 import itertools
 import matplotlib
 import numpy as np
