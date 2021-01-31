@@ -14,7 +14,7 @@ alpha = 0.5  # learning rate, learn more quickly if alpha is closer to 1
 gamma = 0.6  # use a higher gamma for smaller spaces because we value later rewards rather than former rewards
 epsilon = 0.05  # agent can do 100% exploitation (0) or 100% exploration (1)
 
-NUM_EPISODES = 15000
+NUM_EPISODES = 5000
 
 '''action space:
     0 - south (up)
@@ -45,7 +45,7 @@ def next_step(q_table, enviroment, action, state, old_state, goal_state):
             if action == 0 or action == 3:
                 return -10, state
             elif action == 1:
-                return 0, state+4
+                return 0, state+enviromentsize
             elif action == 2:
                 return 0, state+1
 
@@ -53,7 +53,7 @@ def next_step(q_table, enviroment, action, state, old_state, goal_state):
             if action == 0:
                 return -10, state
             elif action == 1:
-                reward, new_state = check_old_state(old_state, state+4)
+                reward, new_state = check_old_state(old_state, state+enviromentsize)
                 return reward, new_state
             elif action == 2:
                 reward, new_state = check_old_state(old_state, state+1)
@@ -64,10 +64,10 @@ def next_step(q_table, enviroment, action, state, old_state, goal_state):
 
         elif state == 5 or state == 6 or state == 9 or state == 10:
             if action == 0:
-                reward, new_state = check_old_state(old_state, state-4)
+                reward, new_state = check_old_state(old_state, state-enviromentsize)
                 return reward, new_state
             elif action == 1:
-                reward, new_state = check_old_state(old_state, state+4)
+                reward, new_state = check_old_state(old_state, state+enviromentsize)
                 return reward, new_state
             elif action == 2:
                 reward, new_state = check_old_state(old_state, state+1)
@@ -80,7 +80,7 @@ def next_step(q_table, enviroment, action, state, old_state, goal_state):
             if action == 0 or action == 2:
                 return -10, state
             elif action == 1:
-                reward, new_state = check_old_state(old_state, state+4)
+                reward, new_state = check_old_state(old_state, state+enviromentsize)
                 return reward, new_state
             elif action == 3:
                 reward, new_state = check_old_state(old_state, state-1)
@@ -88,10 +88,10 @@ def next_step(q_table, enviroment, action, state, old_state, goal_state):
 
         elif state == 7 or state == 11:
             if action == 0:
-                reward, new_state = check_old_state(old_state, state-4)
+                reward, new_state = check_old_state(old_state, state-enviromentsize)
                 return reward, new_state
             elif action == 1:
-                reward, new_state = check_old_state(old_state, state+4)
+                reward, new_state = check_old_state(old_state, state+enviromentsize)
                 return reward, new_state
             elif action == 2:
                 return -10, state
@@ -101,12 +101,12 @@ def next_step(q_table, enviroment, action, state, old_state, goal_state):
 
         elif state == 4 or state == 8:
             if action == 0:
-                reward, new_state = check_old_state(old_state, state-4)
+                reward, new_state = check_old_state(old_state, state-enviromentsize)
                 return reward, new_state
             elif action == 3:
                 return -10, state
             elif action == 1:
-                reward, new_state = check_old_state(old_state, state+4)
+                reward, new_state = check_old_state(old_state, state+enviromentsize)
                 return reward, new_state
             elif action == 2:
                 reward, new_state = check_old_state(old_state, state+1)
@@ -114,7 +114,7 @@ def next_step(q_table, enviroment, action, state, old_state, goal_state):
 
         elif state == 12:
             if action == 0:
-                reward, new_state = check_old_state(old_state, state-4)
+                reward, new_state = check_old_state(old_state, state-enviromentsize)
                 return reward, new_state
             elif action == 3 or action == 1:
                 return -10, state
@@ -124,7 +124,7 @@ def next_step(q_table, enviroment, action, state, old_state, goal_state):
 
         elif state == 13 or state == 14:
             if action == 0:
-                reward, new_state = check_old_state(old_state, state-4)
+                reward, new_state = check_old_state(old_state, state-enviromentsize)
                 return reward, new_state
             elif action == 3:
                 reward, new_state = check_old_state(old_state, state-1)
@@ -137,7 +137,7 @@ def next_step(q_table, enviroment, action, state, old_state, goal_state):
 
         elif state == 15:
             if action == 0:
-                reward, new_state = check_old_state(old_state, state-4)
+                reward, new_state = check_old_state(old_state, state-enviromentsize)
                 return reward, new_state
             elif action == 3:
                 reward, new_state = check_old_state(old_state, state-1)
@@ -306,7 +306,7 @@ def plot_matrix(matrix, x_size, y_size):
 
 
 def main():
-    global state_matrix
+    global state_matrix, enviromentsize
     enviromentsize = 4
     state_size = enviromentsize*enviromentsize  # defines environment
     env = np.zeros((enviromentsize, enviromentsize))

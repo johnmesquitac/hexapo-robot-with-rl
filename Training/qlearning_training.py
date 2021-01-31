@@ -10,13 +10,14 @@ from matplotlib import pyplot as plt
 
 
 # parameters of learning
-alpha = 0.5 # learning rate, learn more quickly if alpha is closer to 1
+alpha = 0.5  # learning rate, learn more quickly if alpha is closer to 1
 gamma = 0.6  # use a higher gamma for smaller spaces because we value later rewards rather than former rewards
 epsilon = 0.05  # agent can do 100% exploitation (0) or 100% exploration (1)
 
-action_space = [0,1,2,3]
+action_space = [0, 1, 2, 3]
 
-NUM_EPISODES = 700
+NUM_EPISODES = 1000
+
 
 '''action space:
     0 - south (up)
@@ -32,7 +33,7 @@ def select_optimal_action(state, actions_allowed):
             pass
         else:
             Q[state][i] = 0
-    #print(Q[state])
+    # print(Q[state])
     optimal = np.argmax(Q[state], axis=0)
     if Q[state][optimal] == 0.:
         optimal = np.argmin(Q[state], axis=0)
@@ -43,37 +44,40 @@ def select_optimal_action(state, actions_allowed):
 def identifies_index(state):
     for i in range(enviromentsize):
         for j in range(enviromentsize):
-                if state_matrix[i][j] == state:
-                    return i, j
+            if state_matrix[i][j] == state:
+                return i, j
+
 
 def identifies_state_matrix(i, j):
     return state_matrix[i][j]
 # verificar se tomando uma nova decisão não tomei a mesma anteriormente pra evitar caminhos longos
+
+
 def next_step(action, state, goal_state):
-  
     if state == goal_state:
         return 10, state
-    elif state == trap_state:
+    elif state == trap_state: 
         return -5, state
     else:
         i, j = identifies_index(state)
 
-        #up
+        # up
         if action == 0 and i > 0:
-                i -= 1
+            i -= 1
             # Move left
         elif action == 1 and j > 0:
-                j -= 1
+            j -= 1
             # Move down
         elif action == 2 and i < enviromentsize - 1:
-                i += 1
+            i += 1
             # Move right
         elif action == 3 and j < enviromentsize - 1:
-                j += 1
+            j += 1
 
-        next_state = identifies_state_matrix(i,j)
+        next_state = identifies_state_matrix(i, j)
         reward = -1
         return reward, int(next_state)
+
 
 def checking_allowed_spaces(state):
     if (state == 5 or state == 6 or state == 9 or state == 10):
@@ -83,7 +87,7 @@ def checking_allowed_spaces(state):
     elif (state == 1 or state == 2):
         return np.array([1, 2, 3])
     elif state == 3:
-        return np.array([1,3])
+        return np.array([1, 3])
     elif state == 4 or state == 8:
         return np.array([0, 1, 2])
     elif state == 7 or state == 11:
@@ -96,37 +100,32 @@ def checking_allowed_spaces(state):
         return np.array([0, 3])
 
 
-def update( enviroment, state, old_state, episode, steps):
+def update(enviroment, state, old_state, episode, steps):
     # print('updating')
     done = False
     #action_space = checking_allowed_spaces(state)
     if random.uniform(0, 1) < epsilon:
         action = random.choice(action_space)
-
     else:
-
         action = select_optimal_action(state, action_space)
-
     # get the reward of choosing current action and the next state
     reward, next_state = next_step(action, state, goal_state)
 
-    if reward == 10 or reward==-5:
+    if reward == 10 or reward == -5:
         done = True
     # stores the old_state to not going back avoiding loopings in the same square
-    
     old_state = state
 
     # get maximum q_value for action in next state
-    
     next_max_state_q_value = np.max(Q[next_state])
-
-    Q[state][action] += alpha*(reward + gamma*next_max_state_q_value - Q[state][action])
+    Q[state][action] += alpha * \
+        (reward + gamma*next_max_state_q_value - Q[state][action])
 
     return next_state, reward, old_state, done
 
 
 def training_agent(enviroment, num_episodes, env_size):
-    global goal_state, steps, rewards, training_start, training_end, penalties, trap_state
+    global goal_state, steps, rewards, training_start, training_end, penalties, trap_state 
     training_start = time()
     steps = []
     rewards = []
@@ -141,13 +140,14 @@ def training_agent(enviroment, num_episodes, env_size):
         m, n = identifies_trap(enviroment, env_size)
         state = int(state_matrix[i][j])
         goal_state = int(state_matrix[k][l])
-        trap_state =  int(state_matrix[m][n])
+        trap_state = int(state_matrix[m][n])
         states.append(state)
         epochs = 0
         num_penalties, reward, total_reward, old_state = 0, 0, 0, 0
         done = False
         while not done:
-            state, reward, old_state, done = update(enviroment, state, old_state, num_episodes, epochs)
+            state, reward, old_state, done = update(
+                enviroment, state, old_state, num_episodes, epochs)
             total_reward += reward
             epochs += 1
             #print(state, reward, old_state, done, goal_state)
@@ -156,7 +156,7 @@ def training_agent(enviroment, num_episodes, env_size):
         steps.append(epochs)
         rewards.append(total_reward)
         penalties.append(num_penalties)
-        
+
         print("Time steps: {}, Penalties: {}, Reward: {}, Goal State: {}, Epsilon:{}, Episode:{}".format(
             epochs, num_penalties, total_reward, goal_state, epsilon, episode))
         print(states)
@@ -164,7 +164,6 @@ def training_agent(enviroment, num_episodes, env_size):
     training_end = time()
 
     # print(rewards)
-
 
 
 def evaluate_training():
@@ -222,8 +221,8 @@ def reset_enviroment(enviroment, env_size):  # changes the goal to another place
         j += 1
     enviroment[2][3] = 20
     enviroment[1][1] = -1
+    enviroment[1][2] = -1
     enviroment[0][0] = 1
-
     return enviroment
 
 
@@ -249,12 +248,14 @@ def identifiesgoal_state(enviroment, env_size):
             if enviroment[i][j] == 20:
                 return i, j
 
+
 def identifies_trap(enviroment, env_size):
     for i in range(env_size):
         for j in range(env_size):
             if enviroment[i][j] == -1:
                 return i, j
 # plot desired matrix
+
 
 def plot_matrix(matrix, x_size, y_size):
     figure, ax = plt.subplots()
@@ -274,7 +275,8 @@ def main():
     env = np.zeros((enviromentsize, enviromentsize))
     env = reset_enviroment(env, enviromentsize)
     actions_size = enviromentsize  # lef, right, up and down
-    state_matrix = initialize_state_matrix(np.zeros((enviromentsize, enviromentsize)), enviromentsize)
+    state_matrix = initialize_state_matrix(
+        np.zeros((enviromentsize, enviromentsize)), enviromentsize)
     Q = np.zeros((state_size, actions_size))  # initializing q-table with zeros
     Q.shape
     training_agent(env, NUM_EPISODES, enviromentsize)

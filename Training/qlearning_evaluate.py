@@ -1,42 +1,46 @@
 import numpy as np
 import pickle
-from qlearning_training import  reset_enviroment, initialize_state_matrix, identifiesgoal_state, identifies_state
+from qlearning_training import reset_enviroment, initialize_state_matrix, identifiesgoal_state, identifies_state
 
 action_space = np.array([0, 1, 2, 3])
+
 
 def identifies_index(state):
     for i in range(enviromentsize):
         for j in range(enviromentsize):
-                if state_matrix[i][j] == state:
-                    return i, j
+            if state_matrix[i][j] == state:
+                return i, j
+
 
 def identifies_state_matrix(i, j):
     return state_matrix[i][j]
 # verificar se tomando uma nova decisão não tomei a mesma anteriormente pra evitar caminhos longos
 
+
 def next_step(action, state, goal_state):
-  
+
     if state == goal_state:
         return 10, state
     else:
         i, j = identifies_index(state)
 
-        #up
+        # up
         if action == 0 and i > 0:
-                i -= 1
-            # Move left
+            i -= 1
+        # Move left
         elif action == 1 and j > 0:
-                j -= 1
-            # Move down
+            j -= 1
+        # Move down
         elif action == 2 and i < enviromentsize - 1:
-                i += 1
-            # Move right
+            i += 1
+        # Move right
         elif action == 3 and j < enviromentsize - 1:
-                j += 1
+            j += 1
 
-        next_state = identifies_state_matrix(i,j)
+        next_state = identifies_state_matrix(i, j)
         reward = -1
-        return reward, int(next_state) 
+        return reward, int(next_state)
+
 
 def select_optimal_action(state):
 
@@ -46,6 +50,7 @@ def select_optimal_action(state):
         optimal = np.argmin(Q[state], axis=0)
         print(state, optimal, Q[state][optimal])
     return optimal
+
 
 def select_optimal_path(q_table, enviroment):
     enviroment[0][0] = 1
@@ -62,7 +67,7 @@ def select_optimal_path(q_table, enviroment):
     done = False
     while(not done):
         action = select_optimal_action(state)
-        reward, next_state = next_step(action,state,goal_state)
+        reward, next_state = next_step(action, state, goal_state)
         state = next_state
         states.append(state)
         print(states)
