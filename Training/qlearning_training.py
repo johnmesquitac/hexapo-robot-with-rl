@@ -10,13 +10,13 @@ from matplotlib import pyplot as plt
 
 
 # parameters of learning
-alpha = 0.5  # learning rate, learn more quickly if alpha is closer to 1
+alpha = 0.01  # learning rate, learn more quickly if alpha is closer to 1
 gamma = 0.6  # use a higher gamma for smaller spaces because we value later rewards rather than former rewards
 epsilon = 0.05  # agent can do 100% exploitation (0) or 100% exploration (1)
 
 action_space = [0, 1, 2, 3]
 
-NUM_EPISODES = 1000
+NUM_EPISODES = 5000
 
 
 '''action space:
@@ -56,7 +56,7 @@ def identifies_state_matrix(i, j):
 def next_step(action, state, goal_state):
     if state == goal_state:
         return 10, state
-    elif state == trap_state: 
+    elif state in traps:
         return -5, state
     else:
         i, j = identifies_index(state)
@@ -125,7 +125,7 @@ def update(enviroment, state, old_state, episode, steps):
 
 
 def training_agent(enviroment, num_episodes, env_size):
-    global goal_state, steps, rewards, training_start, training_end, penalties, trap_state 
+    global goal_state, steps, rewards, training_start, training_end, penalties
     training_start = time()
     steps = []
     rewards = []
@@ -137,19 +137,21 @@ def training_agent(enviroment, num_episodes, env_size):
         # reset enviroment to learn a new goal
         i, j = identifies_state(enviroment, env_size)
         k, l = identifiesgoal_state(enviroment, env_size)
-        m, n = identifies_trap(enviroment, env_size)
+        identifies_trap(enviroment, env_size)
         state = int(state_matrix[i][j])
         goal_state = int(state_matrix[k][l])
-        trap_state = int(state_matrix[m][n])
         states.append(state)
         epochs = 0
-        num_penalties, reward, total_reward, old_state = 0, 0, 0, 0
+        num_penalties, reward, total_reward, old_state, penalty = 0, 0, 0, 0, 0
         done = False
         while not done:
             state, reward, old_state, done = update(
                 enviroment, state, old_state, num_episodes, epochs)
             total_reward += reward
             epochs += 1
+            if state in traps:
+                penalty+=1
+                num_penalties+=penalty
             #print(state, reward, old_state, done, goal_state)
             states.append(state)
         # store steps and rewards for each episode
@@ -219,9 +221,11 @@ def reset_enviroment(enviroment, env_size):  # changes the goal to another place
     i, j = indices[0], indices[1]
     if(i == 0 == j):
         j += 1
-    enviroment[2][3] = 20
+    enviroment[3][3] = 20
     enviroment[1][1] = -1
+    enviroment[2][2] = -1
     enviroment[1][2] = -1
+    enviroment[2][3] = -1
     enviroment[0][0] = 1
     return enviroment
 
@@ -250,13 +254,15 @@ def identifiesgoal_state(enviroment, env_size):
 
 
 def identifies_trap(enviroment, env_size):
+    global traps
+    traps = []
     for i in range(env_size):
         for j in range(env_size):
             if enviroment[i][j] == -1:
-                return i, j
+                traps.append(state_matrix[i][j])
+
+
 # plot desired matrix
-
-
 def plot_matrix(matrix, x_size, y_size):
     figure, ax = plt.subplots()
     im = ax.matshow(matrix)
@@ -281,6 +287,7 @@ def main():
     Q.shape
     training_agent(env, NUM_EPISODES, enviromentsize)
     evaluate_training()
+    plot_matrix(env, enviromentsize, enviromentsize)
     print(Q)
     with open('pickle/Q_0_1.pickle', "wb") as write:
         pickle.dump(Q, write)
