@@ -16,7 +16,7 @@ epsilon = 0.05  # agent can do 100% exploitation (0) or 100% exploration (1)
 
 action_space = [0, 1, 2, 3]
 
-NUM_EPISODES = 1000
+NUM_EPISODES = 2000
 
 
 '''action space:

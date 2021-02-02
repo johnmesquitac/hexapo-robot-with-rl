@@ -37,31 +37,42 @@ def next_step(action, state, goal_state):
         elif action == 3 and j < enviromentsize - 1:
             j += 1
 
+        steps.append(action)
         next_state = identifies_state_matrix(i, j)
         reward = -1
         return reward, int(next_state)
 
 
 def select_optimal_action(state):
-
     optimal = np.argmax(Q[state], axis=0)
-
     if Q[state][optimal] == 0.:
         optimal = np.argmin(Q[state], axis=0)
         print(state, optimal, Q[state][optimal])
     return optimal
 
 
+def define_steps():
+    for step in steps:
+        if step == 0:
+            steps_desc.append('U')
+        elif step == 1:
+            steps_desc.append('L')
+        elif step == 2:
+            steps_desc.append('D')
+        elif step == 3:
+            steps_desc.append('R')
+
+
 def select_optimal_path(q_table, enviroment):
-    # reset enviroment to learn a new goal
+    global steps, steps_desc
     i, j = identifies_state(enviroment, enviromentsize)
     k, l = identifiesgoal_state(enviroment, enviromentsize)
     state = int(state_matrix[i][j])
     goal_state = int(state_matrix[k][l])
     states = []
+    steps = []
+    steps_desc = []
     states.append(state)
-    print(state, goal_state, '\n')
-    print('\n', q_table, '\n', enviroment)
     reward, next_state = 0, 0
     done = False
     while(not done):
@@ -71,7 +82,9 @@ def select_optimal_path(q_table, enviroment):
         states.append(state)
         if reward == 10:
             done = True
-    print(states, '\n', q_table)
+    states = states[:-1]
+    define_steps()
+    print(q_table, '\n', '\n', states, '\n', steps, '\n', steps_desc)
 
 
 def main():
@@ -82,7 +95,7 @@ def main():
     state_matrix = initialize_state_matrix(
         np.zeros((enviromentsize, enviromentsize)), enviromentsize)
 
-    with open('pickle/Q.pickle', "rb") as read:
+    with open('pickle/with_obstacles/Q.pickle', "rb") as read:
         Q = pickle.load(read)
 
     select_optimal_path(Q, env)
