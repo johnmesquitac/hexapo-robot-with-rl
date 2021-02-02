@@ -16,7 +16,7 @@ epsilon = 0.05  # agent can do 100% exploitation (0) or 100% exploration (1)
 
 action_space = [0, 1, 2, 3]
 
-NUM_EPISODES = 5000
+NUM_EPISODES = 2000
 
 
 '''action space:
@@ -225,7 +225,6 @@ def reset_enviroment(enviroment, env_size):  # changes the goal to another place
     enviroment[1][1] = -1
     enviroment[2][2] = -1
     enviroment[1][2] = -1
-    enviroment[2][3] = -1
     enviroment[0][0] = 1
     return enviroment
 
@@ -289,7 +288,7 @@ def main():
     evaluate_training()
     plot_matrix(env, enviromentsize, enviromentsize)
     print(Q)
-    with open('pickle/Q_0_1.pickle', "wb") as write:
+    with open('pickle/Q.pickle', "wb") as write:
         pickle.dump(Q, write)
 
 

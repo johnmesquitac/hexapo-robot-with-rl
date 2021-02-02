@@ -53,7 +53,6 @@ def select_optimal_action(state):
 
 
 def select_optimal_path(q_table, enviroment):
-    enviroment[0][0] = 1
     # reset enviroment to learn a new goal
     i, j = identifies_state(enviroment, enviromentsize)
     k, l = identifiesgoal_state(enviroment, enviromentsize)
@@ -63,15 +62,13 @@ def select_optimal_path(q_table, enviroment):
     states.append(state)
     print(state, goal_state, '\n')
     print('\n', q_table, '\n', enviroment)
-    old_state, reward, next_state = 0, 0, 0
+    reward, next_state = 0, 0
     done = False
     while(not done):
         action = select_optimal_action(state)
         reward, next_state = next_step(action, state, goal_state)
         state = next_state
         states.append(state)
-        print(states)
-        print(state, goal_state, '\n', enviroment, '\n', q_table)
         if reward == 10:
             done = True
     print(states, '\n', q_table)
@@ -85,7 +82,7 @@ def main():
     state_matrix = initialize_state_matrix(
         np.zeros((enviromentsize, enviromentsize)), enviromentsize)
 
-    with open('pickle/Q_0_1.pickle', "rb") as read:
+    with open('pickle/Q.pickle', "rb") as read:
         Q = pickle.load(read)
 
     select_optimal_path(Q, env)
