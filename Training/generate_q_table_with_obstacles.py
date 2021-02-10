@@ -1,16 +1,16 @@
 import itertools
-import matplotlib
+import matplotlib # pylint: disable=import-error
 import numpy as np
 import pandas as pd
 import sys
 import random
 import pickle
 from time import time
-from matplotlib import pyplot as plt
-
+from matplotlib import pyplot as plt # pylint: disable=import-error
+import seaborn as sns # pylint: disable=import-error
 
 # parameters of learning
-alpha = 0.01  # learning rate, learn more quickly if alpha is closer to 1
+alpha = 0.005  # learning rate, learn more quickly if alpha is closer to 1
 gamma = 0.6  # use a higher gamma for smaller spaces because we value later rewards rather than former rewards
 epsilon = 0.05  # agent can do 100% exploitation (0) or 100% exploration (1)
 
@@ -18,12 +18,13 @@ action_space = [0, 1, 2, 3]
 
 NUM_EPISODES = 2000
 
+all_rewards = []
 
 '''action space:
     0 - south (up)
-    1 - north(down)
-    2 - east (right)
-    3 - west (left)'''
+    1 - west (left)
+    2 - north(down)
+    3 - east (right)'''
 
 
 def select_optimal_action(state, actions_allowed):
@@ -170,7 +171,7 @@ def training_agent(enviroment, num_episodes, env_size, goal_position):
 
 def evaluate_training(state):
     print(rewards)
-
+    all_rewards.append(rewards)
     mean_rate = [np.mean(rewards[n-10:n]) if n > 10 else np.mean(rewards[:n])
                  for n in range(1, len(rewards))]
     elapsed_training_time = int(training_end-training_start)
@@ -215,6 +216,43 @@ def evaluate_training(state):
     plt.ylabel('Rewards')
     plt.savefig('imgs/with_obstacles/rewards/rewards'+state+'.png')
 
+    plt.figure(figsize=(12,8))
+    for a_idx in action_space:
+        plt.subplot(2,2,a_idx + 1)
+        sns.heatmap(Q[:,a_idx].reshape((16,1)), cmap='hot', vmin=np.min(Q[:,:]), vmax=np.max(Q[:,:]))
+        if a_idx == 0:
+            direction = 'Up'
+        elif a_idx ==1:
+            direction = 'Left'
+        elif a_idx ==2 :
+            direction = 'Down'
+        else:
+            direction = 'Right'
+        plt.title('Q-Values for Moving {}'.format(direction))
+        plt.ylabel('States')
+    plt.tight_layout()
+    plt.savefig('imgs/with_obstacles/heatmap/heatmap'+state+'.png')
+
+    fig = plt.figure()
+    sns.heatmap(Q[:,:], cmap='hot', vmin=np.min(Q[:,:]), vmax=np.max(Q[:,:]))
+    plt.xlabel('Actions')
+    plt.ylabel('States')
+    plt.title('Q-Values in Training')
+    plt.tight_layout()
+    plt.savefig('imgs/with_obstacles/heatmap/heatmapQ'+state+'.png')
+
+    if state == '15':
+        fig = plt.figure()
+        # Create the boxplot
+        plt.boxplot(all_rewards, showfliers=False)
+        ymin, ymax = plt.ylim()
+        plt.yticks(np.arange(ymin,ymax, step=5))
+        # Save the figure
+        plt.xlabel('States')
+        plt.ylabel('Rewards')
+        plt.title('Rewards in Training')
+        plt.tight_layout()
+        plt.savefig("imgs/with_obstacles/boxplot/boxplot.png")
 
 # changes the goal to another place
 def reset_enviroment(enviroment, env_size, goal_position):
