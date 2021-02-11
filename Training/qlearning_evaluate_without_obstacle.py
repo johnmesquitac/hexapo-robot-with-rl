@@ -95,9 +95,6 @@ def reset_enviroment(enviroment, env_size, goal_position):
     i, j = identifies_state_train(goal_position, env_size)
     enviroment[i][j] = 20
     enviroment[0][0] = 1
-    enviroment[1][1] = -1
-    enviroment[2][2] = -1
-    enviroment[1][2] = -1
     return enviroment
 
 
@@ -112,23 +109,19 @@ def main():
     global state_matrix, enviromentsize, Q, steps_matrix
     steps_matrix = []
     enviromentsize = 4
-    state_matrix = initialize_state_matrix(
-        np.zeros((enviromentsize, enviromentsize)), enviromentsize)
+    state_matrix = initialize_state_matrix(np.zeros((enviromentsize, enviromentsize)), enviromentsize)
     for i in range(1, 16):
-        if i != 5 and i != 6 and i != 10:
-            print('Q_map:', i)
             env = np.zeros((enviromentsize, enviromentsize))
             env = reset_enviroment(env, enviromentsize, i)
-            with open('pickle/with_obstacles/'+str(i)+'.pickle', "rb") as read:
+            with open('pickle/without_obstacles/'+str(i)+'.pickle', "rb") as read:
                 Q = pickle.load(read)
                 print(Q)
             select_optimal_path(Q, env)
 
-    print('steps', steps_matrix)
-
-    with open('pickle/with_obstacles/steps_positions.pickle', "wb") as write:
+    with open('pickle/without_obstacles/steps_positions.pickle', "wb") as write:
         pickle.dump(steps_matrix, write)
 
-
+    print(steps_matrix)
+    
 if __name__ == '__main__':
     main()

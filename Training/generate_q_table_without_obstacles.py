@@ -10,7 +10,7 @@ from matplotlib import pyplot as plt  # pylint: disable=import-error
 import seaborn as sns  # pylint: disable=import-error
 
 # parameters of learning
-alpha = 0.005  # learning rate, learn more quickly if alpha is closer to 1
+alpha = 0.006  # learning rate, learn more quickly if alpha is closer to 1
 gamma = 0.6  # use a higher gamma for smaller spaces because we value later rewards rather than former rewards
 epsilon = 0.05  # agent can do 100% exploitation (0) or 100% exploration (1)
 
