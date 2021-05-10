@@ -162,7 +162,7 @@ CAMERA_WIDTH = 1024
 CAMERA_HEIGHT = 768
 # Raio mínimo para o círculo de contorno
 MIN_RADIUS = 2
-PORT = "COM25"
+PORT = "COM4"
 BUS = 9600
 # Inicializacao de variaveis globais
 x_red = 0 

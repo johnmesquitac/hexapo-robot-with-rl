@@ -53,6 +53,20 @@ def CriarPlanilha():
     ws['G1'] = 'Tempo'
 
 def VerificaPosicao():
+    global x_red 
+    global y_red 
+    global x_blue  
+    global y_blue 
+    global robot_center_x 
+    global robot_center_y 
+    global robot_inclination 
+    global target_x 
+    global target_y 
+    global target_inclination
+    global List_X
+    global List_Y
+    global start_time
+    global split_time
     ret_val, img = cam.read()
     img_filter = cv2.GaussianBlur(img.copy(), (3, 3), 0)
     img_filter = cv2.cvtColor(img_filter, cv2.COLOR_BGR2HSV)
@@ -122,6 +136,16 @@ def VerificaPosicao():
     return message
 
 def main():   
+    global target_x
+    global target_y
+    global List_Target_X
+    global List_Target_Y
+    global List_X
+    global List_Y
+    global start_time
+    global split_time
+    target_x = 0
+    target_y = 0
     i = 0
     target = targets[i]
     target_x = int(target.split(',')[0])
@@ -205,8 +229,6 @@ if __name__ == '__main__':
     robot_center_x = 0
     robot_center_y = 0
     robot_inclination = 0
-    target_x = 0
-    target_y = 0
     target_inclination = 0
     start_time = 0
     split_time = 0
@@ -218,7 +240,7 @@ if __name__ == '__main__':
     List_Target_X = []
     List_Target_Y = []
     #Lista de Waypoints
-    targets = ['79,89']
+    targets = ['84,126']
     # Inicializacao da camera
     cam = cv2.VideoCapture(0)
     # Define a resolucao escolhida para a imagem
