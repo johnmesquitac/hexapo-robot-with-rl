@@ -1,9 +1,19 @@
 import cv2 # pylint: disable=import-error
 import math
-from digi.xbee.devices import XBeeDevice # pylint: disable=import-error
+import serial
+from digi.xbee.devices import XBeeDevice
+from digi.xbee.devices import *
+from digi.xbee.util import *
+from digi.xbee.packets import *
 import matplotlib.pyplot as plt
 import time
 from openpyxl import Workbook
+
+PORT = "COM4"
+BUS = 9600 
+
+
+
 
 def AdicionarPlanilha():
     global ws
@@ -15,6 +25,7 @@ def AdicionarPlanilha():
     global target_y 
     global target_inclination
     global split_time
+
   
     linha = str(cont_linhas_planilha) 
     ws['A' + linha] = robot_center_x
@@ -117,14 +128,14 @@ def VerificaPosicao():
 	#Atualizando imagem da camera
     cv2.imshow('webcam', img) 
     cv2.waitKey(3)
-    cv2.imwrite('webacam.jpg', img)
+    cv2.imwrite('webcam.jpg', img)
     message = str(robot_center_x) + "," + str(robot_center_y) + ";" + str(robot_inclination) + ";" + str(target_x) + "," + str(target_y) + ";" + str(target_inclination)
     split_time = time.time() - start_time
     #AdicionarPlanilha()
     print ("Enviado para o Robo: " + message)
     return message
 
-def main():
+def main():   
     global target_x
     global target_y
     global List_Target_X
@@ -133,11 +144,8 @@ def main():
     global List_Y
     global start_time
     global split_time
-    global wb
-    global cont_linhas_planilha
-    global ws    
-    '''device = XBeeDevice(PORT, BUS)
-        device.open()'''
+    target_x = 0
+    target_y = 0
     i = 0
     target = targets[i]
     target_x = int(target.split(',')[0])
@@ -145,53 +153,100 @@ def main():
     List_Target_X.append(target_x)
     List_Target_Y.append(target_y)
     start_time = time.time()
-    print(VerificaPosicao())
+    
+    device = XBeeDevice("COM4", 9600)
+    device.open()
+    remote_device = RemoteXBeeDevice(device,XBee64BitAddress.from_hex_string("0013A20040631612"))
+    device.send_data(remote_device, "0")
+    xbee_message = device.read_data()
+    while xbee_message is None:
+            xbee_message = device.read_data()
+    xbee_message = xbee_message.data.decode()
+    ok = 1
+    print(xbee_message)
+    
+    while True:
+        print('Alvo: ' + str(target))
+        if target is not None: 
+            if ok == 1:
+                device.send_data(remote_device,VerificaPosicao())
+                ok = 0
+            elif ok==0:
+                robot_info = device.read_data()
+                while robot_info is None:
+                    robot_info = device.read_data()
+                robot_info = robot_info.data.decode()
+                print ('Informacao Recebida do Robo: ' + str(robot_info))
+                if 'Posicao' in robot_info:
+                    device.send_data_broadcast(VerificaPosicao())
+                elif 'Cheguei' in robot_info:
+                    #ws['H' + str(cont_linhas_planilha - 1)] = 'Cheguei'
+                    if i < len(targets) - 1:
+                        i += 1
+                        target = targets[i]                    
+                        target_x = int(target.split(',')[0])
+                        target_y = int(target.split(',')[1])
+                        List_Target_X.append(target_x)
+                        List_Target_Y.append(target_y)
+                        device.send_data(remote_device,VerificaPosicao())
+                    else:
+                        break                
+        #wb.save('relatório.xlsx')
+        print ("\n\n")
+    device.close()
+    print ("\n\n")
+    print ("O robo chegou a todos os alvos. Aplicacao encerrada.")
+    plt.plot(List_X, List_Y, 'r--', 
+	List_Target_X, List_Target_Y, 'bo', 
+	List_X[0], List_Y[0], 'go')
+    plt.axis([0, dist_x, 0, dist_y])
+    plt.show()
 
-#Parametros
-# Azul
-THRESHOLD_LOW_BLUE = (80, 140, 87)
-THRESHOLD_HIGH_BLUE = (120, 240, 130)
-# Vermelho
-THRESHOLD_LOW_RED = (0, 130, 120)
-THRESHOLD_HIGH_RED = (15, 240, 180)
-# Distancia visíveis nos eixos
-dist_x = 277 
-dist_y = 209
-# Resolucao desejada
-CAMERA_WIDTH = 1024
-CAMERA_HEIGHT = 768
-# Raio mínimo para o círculo de contorno
-MIN_RADIUS = 2
-PORT = "COM3"
-BUS = 9600
-# Inicializacao de variaveis globais
-x_red = 0 
-y_red = 0
-x_blue = 0 
-y_blue = 0
-robot_center_x = 0
-robot_center_y = 0
-robot_inclination = 0
-target_x = 0
-target_y = 0
-target_inclination = 0
-start_time = 0
-split_time = 0
-cont_linhas_planilha = 2
-ws = None
-wb = None
-List_X = []
-List_Y = []
-List_Target_X = []
-List_Target_Y = []
-#Lista de Waypoints
-targets = ['157,140']
-# Inicializacao da camera
-cam = cv2.VideoCapture(1)
-# Define a resolucao escolhida para a imagem
-cam.set(cv2.CAP_PROP_FRAME_WIDTH, CAMERA_WIDTH)
-cam.set(cv2.CAP_PROP_FRAME_HEIGHT, CAMERA_HEIGHT)
-print ("Camera Inicializada")
-print ("Monitoramento do Robo Ativo")
-#CriarPlanilha()
-main()
+
+if __name__ == '__main__':
+    global cont_linhas_planilha
+    #Parametros
+    # Azul
+    THRESHOLD_LOW_BLUE = (80, 140, 87)
+    THRESHOLD_HIGH_BLUE = (120, 240, 130)
+    # Vermelho
+    THRESHOLD_LOW_RED = (0, 130, 120)
+    THRESHOLD_HIGH_RED = (15, 240, 180)
+    # Distancia visíveis nos eixos
+    dist_x = 277 
+    dist_y = 209
+    # Resolucao desejada
+    CAMERA_WIDTH = 1024
+    CAMERA_HEIGHT = 768
+    # Raio mínimo para o círculo de contorno
+    MIN_RADIUS = 2
+
+    # Inicializacao de variaveis globais
+    x_red = 0 
+    y_red = 0
+    x_blue = 0 
+    y_blue = 0
+    robot_center_x = 0
+    robot_center_y = 0
+    robot_inclination = 0
+    target_inclination = 0
+    start_time = 0
+    split_time = 0
+    cont_linhas_planilha = 2
+    ws = None
+    wb = None
+    List_X = []
+    List_Y = []
+    List_Target_X = []
+    List_Target_Y = []
+    #Lista de Waypoints
+    targets = ['84,126']
+    # Inicializacao da camera
+    cam = cv2.VideoCapture(0)
+    # Define a resolucao escolhida para a imagem
+    cam.set(cv2.CAP_PROP_FRAME_WIDTH, CAMERA_WIDTH)
+    cam.set(cv2.CAP_PROP_FRAME_HEIGHT, CAMERA_HEIGHT)
+    print ("Camera Inicializada")
+    print ("Monitoramento do Robo Ativo")
+    #CriarPlanilha()
+    main()

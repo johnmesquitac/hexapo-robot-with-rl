@@ -136,8 +136,8 @@ def main():
     global wb
     global cont_linhas_planilha
     global ws    
-    '''device = XBeeDevice(PORT, BUS)
-        device.open()'''
+    #device = XBeeDevice(PORT, BUS)
+    #device.open()
     i = 0
     target = targets[i]
     target_x = int(target.split(',')[0])
@@ -162,7 +162,7 @@ CAMERA_WIDTH = 1024
 CAMERA_HEIGHT = 768
 # Raio mínimo para o círculo de contorno
 MIN_RADIUS = 2
-PORT = "COM3"
+PORT = "COM4"
 BUS = 9600
 # Inicializacao de variaveis globais
 x_red = 0 
@@ -185,9 +185,9 @@ List_Y = []
 List_Target_X = []
 List_Target_Y = []
 #Lista de Waypoints
-targets = ['157,140']
+targets = ['79,137','83,96']
 # Inicializacao da camera
-cam = cv2.VideoCapture(1)
+cam = cv2.VideoCapture(0)
 # Define a resolucao escolhida para a imagem
 cam.set(cv2.CAP_PROP_FRAME_WIDTH, CAMERA_WIDTH)
 cam.set(cv2.CAP_PROP_FRAME_HEIGHT, CAMERA_HEIGHT)

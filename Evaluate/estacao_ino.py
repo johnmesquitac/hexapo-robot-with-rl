@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import time
 from openpyxl import Workbook
 
-PORT = "COM4"
+PORT = "COM3"
 BUS = 9600 
 
 
@@ -126,8 +126,8 @@ def VerificaPosicao():
     target_inclination = round(math.atan2(target_x - robot_center_x, target_y - robot_center_y), 2)     
 	
 	#Atualizando imagem da camera
-    cv2.imshow('webcam', img) 
-    cv2.waitKey(3)
+    '''cv2.imshow('webcam', img) 
+    cv2.waitKey(3)'''
     cv2.imwrite('webcam.jpg', img)
     message = str(robot_center_x) + "," + str(robot_center_y) + ";" + str(robot_inclination) + ";" + str(target_x) + "," + str(target_y) + ";" + str(target_inclination)
     split_time = time.time() - start_time
@@ -154,7 +154,7 @@ def main():
     List_Target_Y.append(target_y)
     start_time = time.time()
     
-    device = XBeeDevice("COM4", 9600)
+    device = XBeeDevice("COM3", 9600)
     device.open()
     remote_device = RemoteXBeeDevice(device,XBee64BitAddress.from_hex_string("0013A20040631612"))
     device.send_data(remote_device, "0")
@@ -239,10 +239,10 @@ if __name__ == '__main__':
     List_Y = []
     List_Target_X = []
     List_Target_Y = []
-    #Lista de Waypoints
-    targets = ['84,126']
+    #Lista de Waypoin'ts
+    targets = ['34,183','25,43']
     # Inicializacao da camera
-    cam = cv2.VideoCapture(0)
+    cam = cv2.VideoCapture(1)
     # Define a resolucao escolhida para a imagem
     cam.set(cv2.CAP_PROP_FRAME_WIDTH, CAMERA_WIDTH)
     cam.set(cv2.CAP_PROP_FRAME_HEIGHT, CAMERA_HEIGHT)
