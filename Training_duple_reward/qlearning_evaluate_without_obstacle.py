@@ -127,12 +127,12 @@ def identifies_state_train(goal_position, size):
 def main():
     global state_matrix, enviromentsize, Q, steps_matrix
     steps_matrix = []
-    enviromentsize = 50
+    enviromentsize = 100
     state_matrix = initialize_state_matrix(np.zeros((enviromentsize, enviromentsize)), enviromentsize)
-    i=2499
+    i=9999
     env = np.zeros((enviromentsize, enviromentsize))
     env = reset_enviroment(env, enviromentsize, i)
-    with open('pickle/without_obstacles/'+str(i)+'.pickle', "rb") as read:
+    with open(r'C:\Users\mesqu\Downloads\TG\hexapo-robot-optmal\pickle\9999.pickle', "rb") as read:
         Q = pickle.load(read)
         print(Q)
     select_optimal_path(Q, env, i)
