@@ -47,7 +47,6 @@ def select_optimal_action(state):
     optimal = np.argmax(Q[state], axis=0)
     if Q[state][optimal] == 0:
         optimal = np.argmin(Q[state], axis=0)
-        print(state, optimal, Q[state][optimal])
     elif optimal == 0 and state == 0:
         optimal = np.argmin(Q[state], axis=0)
     return optimal
@@ -97,7 +96,7 @@ def reset_enviroment(enviroment, env_size, goal_position):
     enviroment[0][0] = 1
     enviroment[1][1] = -1
     enviroment[2][2] = -1
-    enviroment[1][2] = -1
+    enviroment[3][1] = -1
     return enviroment
 
 
@@ -111,17 +110,16 @@ def identifies_state_train(goal_position, size):
 def main():
     global state_matrix, enviromentsize, Q, steps_matrix
     steps_matrix = []
-    enviromentsize = 4
+    enviromentsize = 10
     state_matrix = initialize_state_matrix(
         np.zeros((enviromentsize, enviromentsize)), enviromentsize)
-    for i in range(1, 16):
-        if i != 5 and i != 6 and i != 10:
+    for i in range(1, 100):
+        if i != 11 and i != 22 and i != 31:
             print('Q_map:', i)
             env = np.zeros((enviromentsize, enviromentsize))
             env = reset_enviroment(env, enviromentsize, i)
             with open('pickle/with_obstacles/'+str(i)+'.pickle', "rb") as read:
                 Q = pickle.load(read)
-                print(Q)
             select_optimal_path(Q, env)
 
     print('steps', steps_matrix)

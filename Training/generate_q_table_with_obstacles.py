@@ -16,7 +16,7 @@ epsilon = 0.05  # agent can do 100% exploitation (0) or 100% exploration (1)
 
 action_space = [0, 1, 2, 3]
 
-NUM_EPISODES = 2000
+NUM_EPISODES = 20000
 
 all_rewards = []
 
@@ -80,27 +80,6 @@ def next_step(action, state, goal_state):
         return reward, int(next_state)
 
 
-def checking_allowed_spaces(state):
-    if (state == 5 or state == 6 or state == 9 or state == 10):
-        return np.array([0, 1, 2, 3])
-    elif state == 0:
-        return np.array([1, 2])
-    elif (state == 1 or state == 2):
-        return np.array([1, 2, 3])
-    elif state == 3:
-        return np.array([1, 3])
-    elif state == 4 or state == 8:
-        return np.array([0, 1, 2])
-    elif state == 7 or state == 11:
-        return np.array([0, 1, 3])
-    elif state == 12:
-        return np.array([0, 2])
-    elif state == 13 or state == 14:
-        return np.array([0, 2, 3])
-    elif state == 15:
-        return np.array([0, 3])
-
-
 def update(enviroment, state, old_state, episode, steps):
     # print('updating')
     done = False
@@ -159,18 +138,17 @@ def training_agent(enviroment, num_episodes, env_size, goal_position):
         steps.append(epochs)
         rewards.append(total_reward)
         penalties.append(num_penalties)
-
-        print("Time steps: {}, Penalties: {}, Reward: {}, Goal State: {}, Epsilon:{}, Episode:{}".format(
-            epochs, num_penalties, total_reward, goal_state, epsilon, episode))
-        print(states)
-
+    '''
+            print("Time steps: {}, Penalties: {}, Reward: {}, Goal State: {}, Epsilon:{}, Episode:{}".format(
+                epochs, num_penalties, total_reward, goal_state, epsilon, episode))
+            print(states)'''
     training_end = time()
 
-    # print(rewards)
+    return(steps, rewards, penalties, training_end, training_start)
 
 
-def evaluate_training(state):
-    print(rewards)
+def evaluate_training(state, steps, rewards, penalties, training_end, training_start):
+    #    print(rewards)
     all_rewards.append(rewards)
     mean_rate = [np.mean(rewards[n-10:n]) if n > 10 else np.mean(rewards[:n])
                  for n in range(1, len(rewards))]
@@ -190,6 +168,8 @@ def evaluate_training(state):
     plt.ylabel('Reward')
     plt.savefig("imgs/with_obstacles/mean/mean"+state+".png")
 
+    plt.close('all')
+
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
     ax1.plot(rewards, '-g', label='reward')
@@ -203,23 +183,26 @@ def evaluate_training(state):
     plt.title("Training Progress")
     plt.savefig(
         'imgs/with_obstacles/trainingprocess/trainingprocess'+state+'.png')
+    plt.close(fig)
 
     fig = plt.figure()
     plt.plot(steps)
     plt.xlabel('Episode')
     plt.ylabel('Steps')
     plt.savefig('imgs/with_obstacles/steps/steps'+state+'.png')
+    plt.close(fig)
 
     fig = plt.figure()
     plt.plot(rewards)
     plt.xlabel('Episode')
     plt.ylabel('Rewards')
     plt.savefig('imgs/with_obstacles/rewards/rewards'+state+'.png')
+    plt.close(fig)
 
     plt.figure(figsize=(12,8))
     for a_idx in action_space:
         plt.subplot(2,2,a_idx + 1)
-        sns.heatmap(Q[:,a_idx].reshape((16,1)), cmap='hot', vmin=np.min(Q[:,:]), vmax=np.max(Q[:,:]))
+        sns.heatmap(Q[:,a_idx].reshape((100,1)), cmap='hot', vmin=np.min(Q[:,:]), vmax=np.max(Q[:,:]))
         if a_idx == 0:
             direction = 'Up'
         elif a_idx ==1:
@@ -232,6 +215,7 @@ def evaluate_training(state):
         plt.ylabel('States')
     plt.tight_layout()
     plt.savefig('imgs/with_obstacles/heatmap/heatmap'+state+'.png')
+    plt.close('all')
 
     fig = plt.figure()
     sns.heatmap(Q[:,:], cmap='hot', vmin=np.min(Q[:,:]), vmax=np.max(Q[:,:]))
@@ -240,9 +224,10 @@ def evaluate_training(state):
     plt.title('Q-Values in Training')
     plt.tight_layout()
     plt.savefig('imgs/with_obstacles/heatmap/heatmapQ'+state+'.png')
+    plt.close(fig)
 
-    if state == '15':
-        fig = plt.figure()
+    if state == '99':
+        fig = plt.figure(figsize=(25,15))
         # Create the boxplot
         plt.boxplot(all_rewards, showfliers=False)
         ymin, ymax = plt.ylim()
@@ -253,6 +238,9 @@ def evaluate_training(state):
         plt.title('Rewards in Training')
         plt.tight_layout()
         plt.savefig("imgs/with_obstacles/boxplot/boxplot.png")
+        plt.close(fig)
+        
+    plt.close('all')
 
 # changes the goal to another place
 def reset_enviroment(enviroment, env_size, goal_position):
@@ -262,7 +250,7 @@ def reset_enviroment(enviroment, env_size, goal_position):
     enviroment[0][0] = 1
     enviroment[1][1] = -1
     enviroment[2][2] = -1
-    enviroment[1][2] = -1
+    enviroment[3][1] = -1
     return enviroment
 
 
@@ -319,27 +307,29 @@ def plot_matrix(matrix, x_size, y_size, state):
 
 def main():
     global state_matrix, enviromentsize, Q
-    enviromentsize = 4
+    enviromentsize = 10
     state_size = enviromentsize*enviromentsize  # defines environment
-    for i in range(1, 16):
-        if i != 5 and i != 6 and i != 10:
+    start = time()
+    for i in range(1, 100):
+        if i != 11 and i != 22 and i != 31:
             state_matrix = initialize_state_matrix(
                 np.zeros((enviromentsize, enviromentsize)), enviromentsize)
             env = np.zeros((enviromentsize, enviromentsize))
             env = reset_enviroment(env, enviromentsize, i)
-            actions_size = enviromentsize  # lef, right, up and down
+            actions_size = 4  # lef, right, up and down
             # initializing q-table with zeros
             Q = np.zeros((state_size, actions_size))
             Q.shape
-            training_agent(env, NUM_EPISODES, enviromentsize, i)
-            evaluate_training(str(i))
+            steps, rewards, penalties, training_end, training_start = training_agent(env, NUM_EPISODES, enviromentsize, i)
+            evaluate_training(str(i), steps, rewards, penalties, training_end, training_start)
             plot_matrix(env, enviromentsize, enviromentsize, str(i))
             print(Q)
             with open('pickle/with_obstacles/'+str(i)+'.pickle', "wb") as write:
                 pickle.dump(Q, write)
         else:
             pass
-
+    end = time()-start
+    print('Training has been solved in: '+ str(end) + ' seconds')
 
 if __name__ == '__main__':
     main()

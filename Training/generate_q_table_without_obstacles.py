@@ -16,7 +16,7 @@ epsilon = 0.05  # agent can do 100% exploitation (0) or 100% exploration (1)
 
 action_space = [0, 1, 2, 3]
 all_rewards = []
-NUM_EPISODES = 2000
+NUM_EPISODES = 750
 
 
 '''action space:
@@ -27,17 +27,14 @@ NUM_EPISODES = 2000
 
 
 def select_optimal_action(state, actions_allowed):
-    #print('cheguei no seleciona melhor', state)
     for i in range(0, 3):
         if i in actions_allowed:
             pass
         else:
             Q[state][i] = 0
-    # print(Q[state])
     optimal = np.argmax(Q[state], axis=0)
     if Q[state][optimal] == 0.:
         optimal = np.argmin(Q[state], axis=0)
-    #print('select optimals', optimal)
     return optimal
 
 
@@ -77,28 +74,6 @@ def next_step(action, state, goal_state):
         next_state = identifies_state_matrix(i, j)
         reward = -1
         return reward, int(next_state)
-
-
-def checking_allowed_spaces(state):
-    if (state == 5 or state == 6 or state == 9 or state == 10):
-        return np.array([0, 1, 2, 3])
-    elif state == 0:
-        return np.array([1, 2])
-    elif (state == 1 or state == 2):
-        return np.array([1, 2, 3])
-    elif state == 3:
-        return np.array([1, 3])
-    elif state == 4 or state == 8:
-        return np.array([0, 1, 2])
-    elif state == 7 or state == 11:
-        return np.array([0, 1, 3])
-    elif state == 12:
-        return np.array([0, 2])
-    elif state == 13 or state == 14:
-        return np.array([0, 2, 3])
-    elif state == 15:
-        return np.array([0, 3])
-
 
 def update(enviroment, state, old_state, episode, steps):
     # print('updating')
@@ -159,17 +134,16 @@ def training_agent(enviroment, num_episodes, env_size, goal_position):
         rewards.append(total_reward)
         penalties.append(num_penalties)
 
-        print("Time steps: {}, Penalties: {}, Reward: {}, Goal State: {}, Epsilon:{}, Episode:{}".format(
-            epochs, num_penalties, total_reward, goal_state, epsilon, episode))
-        print(states)
-
+    '''        print("Time steps: {}, Penalties: {}, Reward: {}, Goal State: {}, Epsilon:{}, Episode:{}".format(
+                epochs, num_penalties, total_reward, goal_state, epsilon, episode))
+            print(states)'''
     training_end = time()
 
-    # print(rewards)
+    return(steps, rewards, penalties, training_end, training_start)
 
 
-def evaluate_training(state):
-    print(rewards)
+def evaluate_training(state, steps, rewards, penalties, training_end, training_start):
+    #print(rewards)
     all_rewards.append(rewards)
     mean_rate = [np.mean(rewards[n-10:n]) if n > 10 else np.mean(rewards[:n])
                  for n in range(1, len(rewards))]
@@ -316,22 +290,23 @@ def main():
     global state_matrix, enviromentsize, Q
     enviromentsize = 4
     state_size = enviromentsize*enviromentsize  # defines environment
+    start = time()
     for i in range(1, 16):
-        state_matrix = initialize_state_matrix(
-            np.zeros((enviromentsize, enviromentsize)), enviromentsize)
+        state_matrix = initialize_state_matrix(np.zeros((enviromentsize, enviromentsize)), enviromentsize)
         env = np.zeros((enviromentsize, enviromentsize))
         env = reset_enviroment(env, enviromentsize, i)
         actions_size = enviromentsize  # lef, right, up and down
         # initializing q-table with zeros
         Q = np.zeros((state_size, actions_size))
         Q.shape
-        training_agent(env, NUM_EPISODES, enviromentsize, i)
-        evaluate_training(str(i))
+        steps, rewards, penalties, training_end, training_start = training_agent(env, NUM_EPISODES, enviromentsize, i)
+        evaluate_training(str(i), steps, rewards, penalties, training_end, training_start)
         plot_matrix(env, enviromentsize, enviromentsize, str(i))
         print(Q)
-        with open('pickle/'+str(i)+'.pickle', "wb") as write:
+        with open('pickle/without_obstacles/'+str(i)+'.pickle', "wb") as write:
             pickle.dump(Q, write)
-
+    end = time()-start
+    print('Training has been solved in: '+ str(end) + ' seconds')
 
 if __name__ == '__main__':
     main()

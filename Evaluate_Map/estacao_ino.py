@@ -13,8 +13,6 @@ PORT = "COM4"
 BUS = 9600 
 
 
-
-
 def AdicionarPlanilha():
     global ws
     global wb
