@@ -87,7 +87,7 @@ def select_optimal_path(q_table, enviroment, state):
             done = True
     states = states[:-1]
     define_steps()
-    print(q_table, '\n', '\n', states, '\n', steps, '\n', steps_desc)
+    print(q_table, '\n', '\n', states, '\n', steps,'\n', len(steps), '\n', steps_desc)
     plot_q_with_steps(enviroment, states, enviromentsize, goal_state)
     steps_matrix.append(steps_desc)
 
@@ -127,12 +127,12 @@ def identifies_state_train(goal_position, size):
 def main():
     global state_matrix, enviromentsize, Q, steps_matrix
     steps_matrix = []
-    enviromentsize = 100
+    enviromentsize = 10
     state_matrix = initialize_state_matrix(np.zeros((enviromentsize, enviromentsize)), enviromentsize)
-    i=9999
+    i=99
     env = np.zeros((enviromentsize, enviromentsize))
     env = reset_enviroment(env, enviromentsize, i)
-    with open(r'C:\Users\mesqu\Downloads\TG\hexapo-robot-optmal\pickle\9999.pickle', "rb") as read:
+    with open(r'C:\Users\mesqu\Downloads\TG\hexapo-robot-optmal\pickle\100.pickle', "rb") as read:
         Q = pickle.load(read)
         print(Q)
     select_optimal_path(Q, env, i)
