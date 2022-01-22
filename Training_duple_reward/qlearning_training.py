@@ -246,9 +246,11 @@ def identifies_state(enviroment, env_size):
 
 
 def identifiesgoal_state(enviroment, env_size):
+    print(enviroment)
     for i in range(env_size):
         for j in range(env_size):
             if enviroment[i][j] == 20:
+                print(i,j)
                 return i, j
 
 

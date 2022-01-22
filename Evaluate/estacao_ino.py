@@ -12,9 +12,6 @@ from openpyxl import Workbook
 PORT = "COM3"
 BUS = 9600 
 
-
-
-
 def AdicionarPlanilha():
     global ws
     global wb
@@ -126,12 +123,10 @@ def VerificaPosicao():
     target_inclination = round(math.atan2(target_x - robot_center_x, target_y - robot_center_y), 2)     
 	
 	#Atualizando imagem da camera
-    '''cv2.imshow('webcam', img) 
-    cv2.waitKey(3)'''
     cv2.imwrite('webcam.jpg', img)
     message = str(robot_center_x) + "," + str(robot_center_y) + ";" + str(robot_inclination) + ";" + str(target_x) + "," + str(target_y) + ";" + str(target_inclination)
     split_time = time.time() - start_time
-    #AdicionarPlanilha()
+    AdicionarPlanilha()
     print ("Enviado para o Robo: " + message)
     return message
 
@@ -240,7 +235,7 @@ if __name__ == '__main__':
     List_Target_X = []
     List_Target_Y = []
     #Lista de Waypoin'ts
-    targets = ['34,183','25,43']
+    targets = []
     # Inicializacao da camera
     cam = cv2.VideoCapture(1)
     # Define a resolucao escolhida para a imagem
@@ -248,5 +243,5 @@ if __name__ == '__main__':
     cam.set(cv2.CAP_PROP_FRAME_HEIGHT, CAMERA_HEIGHT)
     print ("Camera Inicializada")
     print ("Monitoramento do Robo Ativo")
-    #CriarPlanilha()
+    CriarPlanilha()
     main()
